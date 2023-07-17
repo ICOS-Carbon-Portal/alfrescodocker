@@ -8,6 +8,6 @@ postgis_icos_db_name: cplog
 postgis_sites_db_name: siteslog
 postgis_cities_db_name: paullog
 
-restheart_cities_domain: cityrestheart1.icos-cp.eu
+restheart_cities_domain: cityrestheart.icos-cp.eu
 
 activity_log_ignore_ips: ["127.0.0.1", "130.235.98.79", "130.235.98.177", "130.235.98.81", "130.235.98.184", "130.235.99.156", "130.235.147.17", "83.253.16.56"]

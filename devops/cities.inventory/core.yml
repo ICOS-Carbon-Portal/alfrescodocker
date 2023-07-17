@@ -1,9 +1,9 @@
 all:
   vars:
-    cpmeta_cities_domain: citymeta1.icos-cp.eu
+    cpmeta_cities_domain: citymeta.icos-cp.eu
     cpauth_cities_domain: cityauthstaging.icos-cp.eu
-    cpdata_cities_domain: citydata1.icos-cp.eu
-    cities_lxd_ip: 10.100.72.96
+    cpdata_cities_domain: citydata.icos-cp.eu
+    cities_lxd_ip: 10.189.225.41
 
     rdflog_postgres_version: 15
 
@@ -29,7 +29,7 @@ all:
   children:
     core_host:
       hosts:
-        icos1_cities:
+        fsicos2_cities:
 
       vars:
         # when running in an lxd VM, bind to 0.0.0.0 so that services are reachable from the host
@@ -62,7 +62,7 @@ all:
 
     core_server:
       hosts:
-        icos1.gis.lu.se:
+        fsicos2.lunarc.lu.se:
 
       vars:
         coreapp_httpproxy_host: cities.lxd
