@@ -1,0 +1,12 @@
+icosdata_mkdirs:
+  - /data/fit_ic
+  - /data/avengers
+
+icosdata_nfs_mounts:
+  - src: "fsicos3.nebula:/data/fit_ic"
+    path: /data/fit_ic
+    opts: "ro,hard,x-systemd.after=nebula.service"
+
+  - src: "fsicos4.nebula:/tank/data/avengers"
+    path: /data/avengers
+    opts: "rw, no_subtree_check, x-systemd.after=nebula.service"
