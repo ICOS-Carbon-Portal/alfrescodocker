@@ -1,0 +1,79 @@
+set shell := ['/bin/bash', '-cu']
+
+repository_source := "local"
+# repository_source := "remote"
+
+# Branch to checkout when repository_source=remote
+branch := "valter/dev"
+
+container_name := "icos-devops"
+snapshot_name := "icos-devops-updated"
+vault_password_file := ".vault_password"
+passwords_file := "dev_passwords.yml"
+vm_user := "ubuntu"
+local_repository_path := "../"
+
+# List available commands as default action
+default:
+    just --list --unsorted --justfile {{justfile()}}
+
+run-playbooks:
+  lxc file push ./vm_scripts/run_playbooks.sh {{container_name}}/home/{{vm_user}}/
+  lxc exec {{container_name}} --cwd /home/{{vm_user}} -- su ubuntu -c ./run_playbooks.sh
+
+reset-vm: destroy-vm create-vm
+
+create-vm: launch-vm init-vm
+
+destroy-vm:
+  lxc delete --force {{container_name}}
+
+enter-vm:
+  lxc exec {{container_name}} --cwd /home/{{vm_user}} -- su ubuntu
+
+start-vm:
+  lxc start {{container_name}}
+
+stop-vm:
+  lxc stop {{container_name}}
+
+launch-vm:
+  lxc launch ubuntu:24.04 {{container_name}}
+  lxc config set {{container_name}} security.nesting=true
+  lxc config device add {{container_name}} postgis-port proxy listen=tcp:127.0.0.1:5438 connect=tcp:127.0.0.1:5438
+  lxc config device add {{container_name}} rdflog-port proxy listen=tcp:0.0.0.0:5433 connect=tcp:127.0.0.1:2345
+  lxc file push ./vm_scripts/setup.sh {{container_name}}/root/setup_vm.sh
+  lxc exec {{container_name}} -- bash setup_vm.sh
+  lxc stop {{container_name}}
+  lxc snapshot {{container_name}} {{snapshot_name}}
+  lxc start {{container_name}}
+
+init-vm:
+    #!/usr/bin/env bash
+    set -e
+    echo "Stopping container"
+    lxc stop {{container_name}}
+    echo "Restoring snapshot"
+    lxc restore {{container_name}} {{snapshot_name}}
+    echo "Starting container"
+    lxc start {{container_name}}
+    echo "Waiting for a container startup..."
+    sleep 1
+    case "{{repository_source}}" in
+        (local)
+            lxc exec {{container_name}} -- mkdir /home/{{vm_user}}/infrastructure
+            lxc file push -rp {{local_repository_path}}/* {{container_name}}/home/{{vm_user}}/infrastructure/
+            lxc exec {{container_name}} -- chown -R {{vm_user}} /home/{{vm_user}}/infrastructure
+            ;;
+
+        (remote)
+            lxc exec {{container_name}} -- git clone https://github.com/ICOS-Carbon-Portal/infrastructure.git /home/{{vm_user}}/infrastructure
+            lxc exec {{container_name}} -- bash -c "cd /home/{{vm_user}}/infrastructure && git checkout {{branch}}"
+            ;;
+        *) echo "Error: repository_source must be local or remote" && exit 1
+    esac
+
+    echo "Pushing passwords file"
+    lxc file push {{passwords_file}} {{container_name}}/home/{{vm_user}}/infrastructure/devops/dev.inventory/group_vars/core_host/passwords.yml
+    echo "Pushing .vault_password"
+    lxc file push {{vault_password_file}} {{container_name}}/home/{{vm_user}}/.vault_password
