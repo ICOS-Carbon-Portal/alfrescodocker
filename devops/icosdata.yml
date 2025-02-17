@@ -20,6 +20,7 @@
     - fsicos3.lunarc.lu.se
     - icos1
     - cupcake
+    - pancake
 
   tags:
     - nfs
@@ -67,6 +68,12 @@
         marker: "# {mark} icosdata"
         block: "{{ icosdata_exports }}"
       notify: Reload NFS server
+
+    - when: icosdata_exports is defined
+      name: Export all directories listed in `/etc/exports`
+      tags: export
+      command: "exportfs -rav"
+      changed_when: no
 
     - when: icosdata_nfs_mounts is defined
       name: Mount nfs data

@@ -17,11 +17,13 @@ icosdata_exports: |
   /pool/ute/stilt/RINGO/T1.3/STILT    fsicos2.lunarc.lu.se(ro,no_subtree_check)
   /data/flexpart/output               fsicos2.lunarc.lu.se(rw,no_subtree_check)
   /pool/jupyter/project/coco2/jupyter fsicos2.lunarc.lu.se(ro,no_subtree_check,no_root_squash)
+  /data/fit_ic                        pancake.nebula(ro,no_subtree_check)
 
 
 icosdata_mkdirs:
   - /nfs
   - /nfs/fsicos2
+  - /data/fit_ic
 
 
 icosdata_nfs_mounts:
@@ -101,3 +103,7 @@ icosdata_nfs_mounts:
   - path: /nfs/flexextract_meteo
     src: icos1.nebula:/pool/flexextract/meteo
     opts: "rw,soft,x-systemd.after=nebula.service"
+
+  - path: /data/avengers
+    src: pancake.nebula:/data/avengers
+    opts: "ro,soft,x-systemd.after=nebula.service"
